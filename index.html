@@ -403,20 +403,29 @@ function updateMap(type) {
 
   // İsterseniz başka diller için de else if ekleyebilirsiniz
 
-  // Harita için markerları ekle
-  countries.forEach(country => {
-    const marker = L.marker([country.lat, country.lng]).addTo(map);
-    marker.bindPopup(`<b>${country.name}</b><br>Nüfus: ${country.population}<br>Dil: ${country.language}</b>`);   
-    marker.on('click', () => {
-      showWikiPage(country.name);
-    });
-    markers.push(marker);
+// Harita için markerları ekle
+countries.forEach(country => {
+  const marker = L.marker([country.lat, country.lng]).addTo(map);
+
+  // Popup içeriği: Dil bilgisi sadece Türkçe seçilince gösterilsin
+  let popupContent = `<b>${country.name}</b><br>Nüfus: ${country.population || 'Bilinmiyor'}`;
+  if (type.toLowerCase() === "turkish" && country.language) {
+    popupContent += `<br>Dil: ${country.language}`;
+  }
+
+  marker.bindPopup(popupContent);
+
+  marker.on('click', () => {
+    showWikiPage(country.name);
   });
 
-  if (countries.length > 0) {
-    const bounds = countries.map(c => [c.lat, c.lng]);
-    map.fitBounds(L.latLngBounds(bounds).pad(0.3));
-  }
+  markers.push(marker);
+});
+
+if (countries.length > 0) {
+  const bounds = countries.map(c => [c.lat, c.lng]);
+  map.fitBounds(L.latLngBounds(bounds).pad(0.3));
+}
 
   // Burada iframe URL'sini mutlaka güncelleyin
   document.getElementById('wikiFrame').src = getWikiUrlByLanguage(type);
